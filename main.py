@@ -3,13 +3,15 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gurobipy import *
 
-no_of_vehicles = 5
+no_of_vehicles = 4
 df = pd.read_csv("WRSN-coordinates.txt", ' ')
-Y = list(df["Y"]);X = list(df["X"])
+Y = list(df["Y"]);
+X = list(df["X"])
 coordinates = np.column_stack((X, Y))
 n = len(coordinates)
 m = Model("MVRP")
-x = {};y = {}
+x = {};
+y = {}
 dist_matrix = np.empty([n, n])
 for i in range(n):
     for j in range(n):
@@ -39,15 +41,16 @@ for v in m.getVars():
 for i in range(n):
     for j in range(n):
         to_node[i, j] = from_node[n * i + j]
+print('\nDecision (Xij):\n', pd.DataFrame(to_node).astype('int64'))
 # to node:决策矩阵
-I = []  #决策矩阵的行
-J = []  #决策矩阵的列
+I = []  # 决策矩阵的行
+J = []  # 决策矩阵的列
 for i in range(n):
     for j in range(n):
         if to_node[i, j] > 0.5:
             I.append(i)
             J.append(j)
-#XX1 = [];XX2 = [];YY1 = [];YY2 = []
+# XX1 = [];XX2 = [];YY1 = [];YY2 = []
 # 以下为新增部分
 print(np.array(I))
 print(np.array(J))
@@ -61,21 +64,40 @@ cnt = 0
 #     YY2.append(Y[j])
 # print([XX1,XX2])
 
+
+# 根据决策矩阵来求解出各条子路径的值，
+# 循环遍历的初始条件：决策列表的前no_of_vehicles作为遍历开始，也就是说列表变量route的初始化从(0，J[0]),或(0，J[1]),.。。。(0，J[no_of_vehicles])开始的
+# 循环遍历的执行内容：根据当前的决策变量I，下一个行J，
+# 循环遍历的结束条件： -,0
 for i in range(no_of_vehicles):
-    end = J[i]
-    route = [0, end]
+    end = J[i]  # 取出(0,J[0])的J[0]
+    route = [0, end]  # 初始route=[0,J[0]]
     while end != 0:
-        start_index = I.index(end)
-        end = J[start_index]
-        route.append(end)
-    all_routes[str(i)] = route
-#///////
+        start_index = I.index(end)  # 找到J[0]在I[]中对应的index，也就是下一个取值的start_index
+        end = J[start_index]  # 将这个index, 到J[]中去找对应的值，
+        route.append(end)  # 将该值添加到子路径列表route中
+    all_routes[str(i)] = route  # 多条子路径构成了总的路径表达
+# 输出all_routes, 包括各条子路径
 print(all_routes)
-plt.scatter(X, Y, marker='o', color='blue')
-plt.xlabel('x-coordinate')
-plt.ylabel('y-coordinate')
-plt.title('WRSN MTSP simulation min distance %g m' % m.objVal)
-#plt.plot([XX1, XX2], [YY1, YY2])
+
+# 图1 原始的WRSN 传感器节点和充电器
+plt.figure()
+plt.scatter(X[1:], Y[1:], marker='o', color='blue')
+plt.scatter(X[0], Y[0], marker='^', color='blue')
+plt.xlabel('x-coordinate(m)')
+plt.ylabel('y-coordinate(m)')
+for i in range(no_of_vehicles):
+    plt.scatter(X[0] - 2 + i, Y[0] - 1, marker='^', color='red')
+plt.title('Original sensors and chargers positions')
+
+# 图2 MTSP求解之后的轨迹
+plt.figure()
+plt.scatter(X[1:], Y[1:], marker='o', color='blue')
+plt.scatter(X[0], Y[0], marker='^', color='blue')
+plt.xlabel('x-coordinate(m)')
+plt.ylabel('y-coordinate(m)')
+plt.title('Total min distance %g (m)' % m.objVal)
+# plt.plot([XX1, XX2], [YY1, YY2])
 for index in all_routes:
     route_list = all_routes[index]
     x = []
@@ -83,6 +105,5 @@ for index in all_routes:
     for i in route_list:
         x.append(X[i])
         y.append(Y[i])
-    plt.plot(x,y)
+    plt.plot(x, y)
 plt.show()
-

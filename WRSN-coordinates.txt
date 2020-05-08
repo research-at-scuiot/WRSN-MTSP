@@ -1,5 +1,5 @@
 Node X Y Demand Profit Et Lt St
-1 35 35 0
+1 0 0 0
 2 41 49 10
 3 35 17 7
 4 55 45 13
@@ -14,4 +14,6 @@ Node X Y Demand Profit Et Lt St
 13 50 35 19
 14 30 25 23
 15 15 10 20
+16 30 5 23
+17 15 40 20
 
