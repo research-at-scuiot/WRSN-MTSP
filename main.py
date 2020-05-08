@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gurobipy import *
 
-no_of_vehicles = 4
+no_of_vehicles = 5
 df = pd.read_csv("WRSN-coordinates.txt", ' ')
 Y = list(df["Y"]);
 X = list(df["X"])
@@ -41,6 +41,7 @@ for v in m.getVars():
 for i in range(n):
     for j in range(n):
         to_node[i, j] = from_node[n * i + j]
+print('\nDistance Matrix (dij):\n', pd.DataFrame(dist_matrix).astype('int64'))
 print('\nDecision (Xij):\n', pd.DataFrame(to_node).astype('int64'))
 # to node:决策矩阵
 I = []  # 决策矩阵的行
@@ -78,7 +79,22 @@ for i in range(no_of_vehicles):
         route.append(end)  # 将该值添加到子路径列表route中
     all_routes[str(i)] = route  # 多条子路径构成了总的路径表达
 # 输出all_routes, 包括各条子路径
+print('all sub route trace:')
 print(all_routes)
+
+sub_route_total_distance = {}
+
+for i in range(no_of_vehicles):
+    prev_index = 0
+    # print('\n')
+    sub_route_total_distance[i] = 0
+    for j in range(len(all_routes[str(i)])):
+        cur_index = all_routes[str(i)][j]
+        # print('dist[%d,%d]=%d' % (prev_index, cur_index, dist_matrix[prev_index][cur_index]))
+        sub_route_total_distance[i] += dist_matrix[prev_index][cur_index]
+        prev_index = cur_index
+print('all sub route total distance sum:')
+print(sub_route_total_distance)
 
 # 图1 原始的WRSN 传感器节点和充电器
 plt.figure()
