@@ -39,23 +39,42 @@ for v in m.getVars():
 for i in range(n):
     for j in range(n):
         to_node[i, j] = from_node[n * i + j]
+# to node:决策矩阵
 I = [];J = []
 for i in range(n):
     for j in range(n):
         if to_node[i, j] > 0.5:
             I.append(i)
             J.append(j)
-XX1 = [];XX2 = [];YY1 = [];YY2 = []
-for i in I:
-    XX1.append(X[i])
-    YY1.append(Y[i])
-for j in J:
-    XX2.append(X[j])
-    YY2.append(Y[j])
-# print([XX1,XX2])
+
+# 一下是新增加的部分:
+print(np.array(I))
+print(np.array(J))
+all_routes = {}
+cnt = 0
+#///////
+# 5是指5辆车
+for i in range(5):
+    end = J[i]
+    route = [0, end]
+    while end != 0:
+        start_index = I.index(end)
+        end = J[start_index]
+        route.append(end)
+    all_routes[str(i)] = route
+#///////
+print(all_routes)
 plt.scatter(X, Y, marker='o', color='blue')
 plt.xlabel('x-coordinate')
 plt.ylabel('y-coordinate')
 plt.title('WRSN MTSP simulation min distance %g m' % m.objVal)
-plt.plot([XX1, XX2], [YY1, YY2])
+for index in all_routes:
+    route_list = all_routes[index]
+    x = []
+    y = []
+    for i in route_list:
+        x.append(X[i])
+        y.append(Y[i])
+    plt.plot(x,y)
 plt.show()
+
